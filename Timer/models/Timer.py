@@ -48,7 +48,20 @@ class Model(nn.Module):
                 print('loading model: ', self.ckpt_path)
                 # 如果是pth格式：
                 if self.ckpt_path.endswith('.pth'):
-                    self.backbone.load_state_dict(torch.load(self.ckpt_path))
+                    pretrained_state_dict = torch.load(self.ckpt_path)
+                    new_state_dict = {}
+                    
+                    for key, value in pretrained_state_dict.items():
+                        if key.startswith('backbone.'):
+                            new_key = key[len('backbone.'):]
+                        else:
+                            new_key = key
+                        
+                        if new_key in self.backbone.state_dict().keys():
+                            new_state_dict[new_key] = value
+                    self.backbone.load_state_dict(new_state_dict)
+                    # import pdb; pdb.set_trace()
+                    # self.backbone.load_state_dict(torch.load(self.ckpt_path))
                 # 如果是ckpt格式：
                 elif self.ckpt_path.endswith('.ckpt'):
                     sd = torch.load(self.ckpt_path, map_location="cpu")["state_dict"]
